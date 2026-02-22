@@ -129,11 +129,11 @@ namespace VehicleService.Controllers
             .FirstOrDefaultAsync(v => v.RegistrationNumber == registrationNumber);
 
         if (vehicle == null)
-            return NotFound(new { message = $"Vehicle with registration number '{registrationNumber}' not found" });
+            return NotFound(new { message = $"Vozilo sa registarskim brojem '{registrationNumber}' nije pronađeno" });
 
         return Ok(new
         {
-            message = "Vehicle retrieved successfully",
+            message = "Vozilo uspešno pronađeno",
             data = vehicle
         });
     }
