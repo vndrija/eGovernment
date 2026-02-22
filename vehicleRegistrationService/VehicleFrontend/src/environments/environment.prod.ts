@@ -5,6 +5,7 @@ export const environment = {
     authService: '/api/auth',
     vehicleService: '/api/vehicles',
     vehicleTransfers: '/api/VehicleTransfers',
-    registrationRequests: '/api/RegistrationRequests'
+    registrationRequests: '/api/RegistrationRequests',
+    trafficPoliceService: '/api/police'
   }
 };

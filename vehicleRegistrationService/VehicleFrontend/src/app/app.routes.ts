@@ -12,7 +12,7 @@ export const routes: Routes = [
   },
   {
     path: 'saobracajna-policija',
-    canActivate: [authGuard],
+    // canActivate: [authGuard],
     loadComponent: () => import('./components/saobracajna-policija/saobracajna-policija.component').then(m => m.SaobracajnaPolicija)
   },
   {

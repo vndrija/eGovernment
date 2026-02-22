@@ -46,9 +46,18 @@ export class NavbarComponent {
     return this.authService.getUserName() || 'Корисник';
   }
 
+  getUserInitial(): string {
+    const name = this.getUserName();
+    return name ? name.charAt(0).toUpperCase() : 'K';
+  }
+
   isAdmin(): boolean {
     const user = this.authService.getUserData();
     return user?.role === 'Admin';
+  }
+
+  isMupVozilaRoute(): boolean {
+    return this.router.url === '/mup-vozila';
   }
 
   goToAdminRequests(): void {

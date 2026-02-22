@@ -107,16 +107,21 @@ public class RegistrationRequestsController : ControllerBase
         try
         {
             var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
-            var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{vehicle.RegistrationNumber}");
+            var token = Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(token))
+            {
+                policeClient.DefaultRequestHeaders.Remove("Authorization");
+                policeClient.DefaultRequestHeaders.Add("Authorization", token);
+            }
+            var policeResponse = await policeClient.GetAsync($"/api/police/status/{vehicle.RegistrationNumber}");
 
             if (policeResponse.IsSuccessStatusCode)
             {
                 var policeData = await policeResponse.Content.ReadAsStringAsync();
                 var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
                 var outstandingFines = policeReport.RootElement
-                    .GetProperty("data")
-                    .GetProperty("outstandingFines")
-                    .GetDecimal();
+                    .GetProperty("totalFinesDue")
+                    .GetDouble();
 
                 // Block registration request if there are outstanding fines
                 if (outstandingFines > 0)
@@ -301,16 +306,21 @@ public class RegistrationRequestsController : ControllerBase
                 try
                 {
                     var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
-                    var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{request.Vehicle.RegistrationNumber}");
+                    var token = Request.Headers["Authorization"].ToString();
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        policeClient.DefaultRequestHeaders.Remove("Authorization");
+                        policeClient.DefaultRequestHeaders.Add("Authorization", token);
+                    }
+                    var policeResponse = await policeClient.GetAsync($"/api/police/status/{request.Vehicle.RegistrationNumber}");
 
                     if (policeResponse.IsSuccessStatusCode)
                     {
                         var policeData = await policeResponse.Content.ReadAsStringAsync();
                         var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
                         var outstandingFines = policeReport.RootElement
-                            .GetProperty("data")
-                            .GetProperty("outstandingFines")
-                            .GetDecimal();
+                            .GetProperty("totalFinesDue")
+                            .GetDouble();
 
                         // Block registration if there are outstanding fines
                         if (outstandingFines > 0)

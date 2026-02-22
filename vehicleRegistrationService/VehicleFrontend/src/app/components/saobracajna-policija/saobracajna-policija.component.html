@@ -1,4 +1,5 @@
 <app-navbar></app-navbar>
+<p-toast></p-toast>
 
 <!-- Tricolor stripe -->
 <div class="flex" style="height: 4px">
@@ -9,7 +10,7 @@
 
 <!-- Page header -->
 <div class="bg-[#C6363C]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <button class="flex items-center gap-1.5 text-red-200 hover:text-white text-xs mb-3 transition-colors" (click)="goBack()">
       <i class="pi pi-arrow-left" style="font-size: 0.65rem"></i>
       Назад на еУправу
@@ -18,35 +19,130 @@
       Министарство унутрашњих послова — Република Србија
     </p>
     <h1 class="text-xl font-bold text-white">Саобраћајна Полиција</h1>
+    <p class="text-red-100 text-sm mt-0.5">Провера возила, евиденција прекршаја, претрага украдених возила и службеничка мрежа</p>
   </div>
 </div>
 
-<div class="min-h-screen bg-[#EEF2F8] py-16">
-  <div class="max-w-lg mx-auto px-4 text-center">
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm px-8 py-12">
-      <div class="w-16 h-16 bg-[#EEF2F8] rounded-full flex items-center justify-center mx-auto mb-5">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#003893]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-        </svg>
-      </div>
-      <h2 class="text-lg font-bold text-gray-900 mb-2">Ускоро доступно</h2>
-      <p class="text-sm text-gray-500 leading-relaxed mb-6">
-        Услуге саобраћајне полиције — провера прекршаја, потражна возила и евиденција казни — биће доступне у наредном периоду.
-      </p>
-      <button
-        (click)="goBack()"
-        class="inline-flex items-center gap-2 text-sm text-[#003893] font-medium hover:underline"
+<!-- Tab navigation -->
+<div class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="flex overflow-x-auto gap-0 -mb-px">
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'check'"
+        [class.text-[#C6363C]]="activeTab() === 'check'"
+        [class.border-transparent]="activeTab() !== 'check'"
+        [class.text-gray-500]="activeTab() !== 'check'"
+        [class.hover:text-gray-700]="activeTab() !== 'check'"
+        (click)="setTab('check')"
       >
-        <i class="pi pi-arrow-left text-xs"></i>
-        Назад на главну страну
+        <i class="pi pi-search text-xs"></i> Провера возила
       </button>
-    </div>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'stolen'"
+        [class.text-[#C6363C]]="activeTab() === 'stolen'"
+        [class.border-transparent]="activeTab() !== 'stolen'"
+        [class.text-gray-500]="activeTab() !== 'stolen'"
+        [class.hover:text-gray-700]="activeTab() !== 'stolen'"
+        (click)="setTab('stolen')"
+      >
+        <i class="pi pi-car text-xs"></i> Украдена возила
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'violations'"
+        [class.text-[#C6363C]]="activeTab() === 'violations'"
+        [class.border-transparent]="activeTab() !== 'violations'"
+        [class.text-gray-500]="activeTab() !== 'violations'"
+        [class.hover:text-gray-700]="activeTab() !== 'violations'"
+        (click)="setTab('violations')"
+      >
+        <i class="pi pi-file-edit text-xs"></i> Прекршаји
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'accidents'"
+        [class.text-[#C6363C]]="activeTab() === 'accidents'"
+        [class.border-transparent]="activeTab() !== 'accidents'"
+        [class.text-gray-500]="activeTab() !== 'accidents'"
+        [class.hover:text-gray-700]="activeTab() !== 'accidents'"
+        (click)="setTab('accidents')"
+      >
+        <i class="pi pi-exclamation-circle text-xs"></i> Незгоде
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'officers'"
+        [class.text-[#C6363C]]="activeTab() === 'officers'"
+        [class.border-transparent]="activeTab() !== 'officers'"
+        [class.text-gray-500]="activeTab() !== 'officers'"
+        [class.hover:text-gray-700]="activeTab() !== 'officers'"
+        (click)="setTab('officers')"
+      >
+        <i class="pi pi-shield text-xs"></i> Службеници
+      </button>
+
+      <button type="button"
+        class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+        [class.border-[#C6363C]]="activeTab() === 'flags'"
+        [class.text-[#C6363C]]="activeTab() === 'flags'"
+        [class.border-transparent]="activeTab() !== 'flags'"
+        [class.text-gray-500]="activeTab() !== 'flags'"
+        [class.hover:text-gray-700]="activeTab() !== 'flags'"
+        (click)="setTab('flags')"
+      >
+        <i class="pi pi-flag text-xs"></i> Маркирана возила
+      </button>
+
+      @if (isAdmin()) {
+        <button type="button"
+          class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ml-auto text-blue-600"
+          [class.border-[#0C4076]]="activeTab() === 'admin'"
+          [class.border-transparent]="activeTab() !== 'admin'"
+          [class.bg-blue-50]="activeTab() === 'admin'"
+          [class.hover:bg-gray-50]="activeTab() !== 'admin'"
+          (click)="setTab('admin')"
+        >
+          <i class="pi pi-cog text-xs"></i> Администрација
+        </button>
+      }
+
+    </nav>
+  </div>
+</div>
+
+<!-- Content area -->
+<div class="min-h-screen bg-[#EEF2F8] py-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    @if (activeTab() === 'check') {
+      <app-check-tab></app-check-tab>
+    } @else if (activeTab() === 'stolen') {
+      <app-stolen-tab></app-stolen-tab>
+    } @else if (activeTab() === 'violations') {
+      <app-violations-tab></app-violations-tab>
+    } @else if (activeTab() === 'accidents') {
+      <app-accidents-tab></app-accidents-tab>
+    } @else if (activeTab() === 'officers') {
+      <app-officers-tab></app-officers-tab>
+    } @else if (activeTab() === 'flags') {
+      <app-flags-tab></app-flags-tab>
+    } @else if (activeTab() === 'admin' && isAdmin()) {
+      <app-admin-tab></app-admin-tab>
+    }
+
   </div>
 </div>
 
 <!-- Footer -->
-<footer class="border-t border-gray-200 bg-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+<footer class="mt-6 border-t border-gray-200 bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
     <p class="text-xs text-gray-400">© 2026 Министарство унутрашњих послова Републике Србије</p>
     <div class="flex items-center gap-0.5">
       <div class="w-4 h-2.5 bg-[#C6363C] rounded-sm"></div>

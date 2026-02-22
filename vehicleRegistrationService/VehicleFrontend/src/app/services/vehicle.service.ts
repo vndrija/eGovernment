@@ -52,4 +52,8 @@ export class VehicleService {
   changeLicensePlate(vehicleId: number, request: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${vehicleId}/change-license-plate`, request);
   }
+
+  getVehicleFines(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/fines`);
+  }
 }

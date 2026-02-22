@@ -1,0 +1,163 @@
+<div class="space-y-5">
+  <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div class="px-5 py-3 bg-[#0C4076] flex items-center gap-2 text-white">
+      <i class="pi pi-cog text-sm"></i>
+      <h2 class="text-base font-semibold">Администрација података</h2>
+    </div>
+    
+    <div class="bg-gray-50 border-b border-gray-200 px-5 py-3">
+      <div class="flex flex-wrap gap-2">
+        <button (click)="setSection('violations')" [class.bg-[#0C4076]]="activeSection() === 'violations'" [class.text-white]="activeSection() === 'violations'" [class.bg-white]="activeSection() !== 'violations'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Прекршаји</button>
+        <button (click)="setSection('accidents')" [class.bg-[#0C4076]]="activeSection() === 'accidents'" [class.text-white]="activeSection() === 'accidents'" [class.bg-white]="activeSection() !== 'accidents'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Незгоде</button>
+        <button (click)="setSection('officers')" [class.bg-[#0C4076]]="activeSection() === 'officers'" [class.text-white]="activeSection() === 'officers'" [class.bg-white]="activeSection() !== 'officers'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Службеници</button>
+        <button (click)="setSection('flags')" [class.bg-[#0C4076]]="activeSection() === 'flags'" [class.text-white]="activeSection() === 'flags'" [class.bg-white]="activeSection() !== 'flags'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Маркирања</button>
+      </div>
+    </div>
+
+    <div class="p-5">
+      @if (activeSection() === 'violations') {
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Евидентирај нови прекршај</h3>
+        <form [formGroup]="issueViolationForm" (ngSubmit)="issueViolation()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Регистарска ознака <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="vehiclePlate" placeholder="нпр. BG-123-AB" class="w-full border rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="issueViolationForm.get('vehiclePlate')?.invalid && issueViolationForm.get('vehiclePlate')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тип прекршаја <span class="text-[#C6363C]">*</span></label>
+              <select formControlName="type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]">
+                <option value="SPEEDING">Прекорачење брзине</option>
+                <option value="PARKING">Непрописно паркирање</option>
+                <option value="DUI">Вожња под дејством</option>
+                <option value="RED_LIGHT">Црвено светло</option>
+                <option value="EXPIRED_DOCS">Истекла документа</option>
+                <option value="RECKLESS_DRIVING">Нехатна вожња</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Локација <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="location" placeholder="нпр. Булевар ослобођења" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="issueViolationForm.get('location')?.invalid && issueViolationForm.get('location')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Износ казне (RSD) <span class="text-[#C6363C]">*</span></label>
+              <input type="number" formControlName="fineAmount" placeholder="нпр. 5000" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="issueViolationForm.get('fineAmount')?.invalid && issueViolationForm.get('fineAmount')?.touched" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Е-пошта прекршиоца (опционо)</label>
+            <input type="email" formControlName="offenderEmail" placeholder="нпр. korisnik@email.com" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Опис прекршаја <span class="text-[#C6363C]">*</span></label>
+            <textarea formControlName="description" rows="3" placeholder="Детаљи..." class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076] resize-none" [class.border-red-400]="issueViolationForm.get('description')?.invalid && issueViolationForm.get('description')?.touched"></textarea>
+          </div>
+          @if (issueViolationError()) { <p class="text-sm text-red-600">{{ issueViolationError() }}</p> }
+          @if (issueViolationSuccess()) { <p class="text-sm text-green-600">{{ issueViolationSuccess() }}</p> }
+          <div class="pt-2"><p-button type="submit" label="Евидентирај прекршај" icon="pi pi-check" severity="info" [loading]="isIssuingViolation()"></p-button></div>
+        </form>
+      }
+
+      @if (activeSection() === 'accidents') {
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Пријави саобраћајну незгоду</h3>
+        <form [formGroup]="reportAccidentForm" (ngSubmit)="reportAccident()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Локација <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="location" placeholder="нпр. Булевар ослобођења 12" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="reportAccidentForm.get('location')?.invalid && reportAccidentForm.get('location')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тежина <span class="text-[#C6363C]">*</span></label>
+              <select formControlName="severity" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]">
+                <option value="MINOR">Лака</option>
+                <option value="MAJOR">Тешка</option>
+                <option value="CRITICAL">Критична</option>
+                <option value="FATAL">Смртоносна</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Укључена возила (одвојена зарезом) <span class="text-[#C6363C]">*</span></label>
+            <input type="text" formControlName="involvedPlates" placeholder="нпр. BG-123-AB, NS-456-CD" class="w-full border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="reportAccidentForm.get('involvedPlates')?.invalid && reportAccidentForm.get('involvedPlates')?.touched" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Опис <span class="text-[#C6363C]">*</span></label>
+            <textarea formControlName="description" rows="3" placeholder="Опишите околности..." class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076] resize-none" [class.border-red-400]="reportAccidentForm.get('description')?.invalid && reportAccidentForm.get('description')?.touched"></textarea>
+          </div>
+          @if (reportAccidentError()) { <p class="text-sm text-red-600">{{ reportAccidentError() }}</p> }
+          @if (reportAccidentSuccess()) { <p class="text-sm text-green-600">{{ reportAccidentSuccess() }}</p> }
+          <div class="pt-2"><p-button type="submit" label="Пријави незгоду" icon="pi pi-check" severity="info" [loading]="isReportingAccident()"></p-button></div>
+        </form>
+      }
+
+      @if (activeSection() === 'officers') {
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Додај новог службеника</h3>
+        <form [formGroup]="addOfficerForm" (ngSubmit)="addOfficer()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Жетон <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="badgeNumber" placeholder="нпр. 123456" class="w-full border rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addOfficerForm.get('badgeNumber')?.invalid && addOfficerForm.get('badgeNumber')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Чин <span class="text-[#C6363C]">*</span></label>
+              <select formControlName="rank" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]">
+                <option value="Позорник">Позорник</option>
+                <option value="Полицајац">Полицајац</option>
+                <option value="Виши полицајац">Виши полицајац</option>
+                <option value="Инспектор">Инспектор</option>
+                <option value="Командир">Командир</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Име <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="firstName" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addOfficerForm.get('firstName')?.invalid && addOfficerForm.get('firstName')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Презиме <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="lastName" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addOfficerForm.get('lastName')?.invalid && addOfficerForm.get('lastName')?.touched" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Станица <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="stationId" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addOfficerForm.get('stationId')?.invalid && addOfficerForm.get('stationId')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Кориснички ID (Auth) (опционо)</label>
+              <input type="text" formControlName="userId" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" />
+            </div>
+          </div>
+          @if (addOfficerError()) { <p class="text-sm text-red-600">{{ addOfficerError() }}</p> }
+          @if (addOfficerSuccess()) { <p class="text-sm text-green-600">{{ addOfficerSuccess() }}</p> }
+          <div class="pt-2"><p-button type="submit" label="Додај службеника" icon="pi pi-check" severity="info" [loading]="isAddingOfficer()"></p-button></div>
+        </form>
+      }
+
+      @if (activeSection() === 'flags') {
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Додај ново маркирање</h3>
+        <form [formGroup]="addFlagForm" (ngSubmit)="addFlag()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Регистарска ознака <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="vehiclePlate" placeholder="нпр. BG-123-AB" class="w-full border rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addFlagForm.get('vehiclePlate')?.invalid && addFlagForm.get('vehiclePlate')?.touched" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тип маркирања <span class="text-[#C6363C]">*</span></label>
+              <input type="text" formControlName="flagType" placeholder="нпр. Интерполова потерница" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addFlagForm.get('flagType')?.invalid && addFlagForm.get('flagType')?.touched" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Опис <span class="text-[#C6363C]">*</span></label>
+            <textarea formControlName="description" rows="3" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076] resize-none" [class.border-red-400]="addFlagForm.get('description')?.invalid && addFlagForm.get('description')?.touched"></textarea>
+          </div>
+          @if (addFlagError()) { <p class="text-sm text-red-600">{{ addFlagError() }}</p> }
+          @if (addFlagSuccess()) { <p class="text-sm text-green-600">{{ addFlagSuccess() }}</p> }
+          <div class="pt-2"><p-button type="submit" label="Додај маркирање" icon="pi pi-check" severity="info" [loading]="isAddingFlag()"></p-button></div>
+        </form>
+      }
+    </div>
+  </div>
+</div>

@@ -122,6 +122,22 @@ namespace VehicleService.Controllers
         return NoContent();
     }
 
+    [HttpGet("plate/{registrationNumber}")]
+    public async Task<IActionResult> GetByRegistrationNumber(string registrationNumber)
+    {
+        var vehicle = await _db.Vehicles
+            .FirstOrDefaultAsync(v => v.RegistrationNumber == registrationNumber);
+
+        if (vehicle == null)
+            return NotFound(new { message = $"Vozilo sa registarskim brojem '{registrationNumber}' nije pronađeno" });
+
+        return Ok(new
+        {
+            message = "Vozilo uspešno pronađeno",
+            data = vehicle
+        });
+    }
+
     [HttpGet("owner/{ownerName}")]
     public async Task<IActionResult> GetByOwnerName(string ownerName)
     {
@@ -183,7 +199,13 @@ namespace VehicleService.Controllers
         try
         {
             var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
-            var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{vehicle.RegistrationNumber}");
+            var token = Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(token))
+            {
+                policeClient.DefaultRequestHeaders.Remove("Authorization");
+                policeClient.DefaultRequestHeaders.Add("Authorization", token);
+            }
+            var policeResponse = await policeClient.GetAsync($"/api/police/status/{vehicle.RegistrationNumber}");
 
             if (!policeResponse.IsSuccessStatusCode)
             {
@@ -209,7 +231,7 @@ namespace VehicleService.Controllers
                     model = vehicle.Model,
                     ownerName = vehicle.OwnerName
                 },
-                policeReport = policeReport.RootElement.GetProperty("data")
+                policeReport = policeReport.RootElement
             });
         }
         catch (Exception ex)
@@ -260,16 +282,21 @@ namespace VehicleService.Controllers
         try
         {
             var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
-            var policeResponse = await policeClient.GetAsync($"/api/policevehicle/check-vehicle/{vehicle.RegistrationNumber}");
+            var renewToken = Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(renewToken))
+            {
+                policeClient.DefaultRequestHeaders.Remove("Authorization");
+                policeClient.DefaultRequestHeaders.Add("Authorization", renewToken);
+            }
+            var policeResponse = await policeClient.GetAsync($"/api/police/status/{vehicle.RegistrationNumber}");
 
             if (policeResponse.IsSuccessStatusCode)
             {
                 var policeData = await policeResponse.Content.ReadAsStringAsync();
                 var policeReport = System.Text.Json.JsonDocument.Parse(policeData);
                 var outstandingFines = policeReport.RootElement
-                    .GetProperty("data")
-                    .GetProperty("outstandingFines")
-                    .GetDecimal();
+                    .GetProperty("totalFinesDue")
+                    .GetDouble();
 
                 // Block renewal if there are outstanding fines
                 if (outstandingFines > 0)
@@ -428,27 +455,22 @@ namespace VehicleService.Controllers
         try
         {
             var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
-            var reportRequest = new
+            var reportToken = Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(reportToken))
             {
-                registrationNumber = vehicle.RegistrationNumber,
-                ownerName = vehicle.OwnerName,
-                make = vehicle.Make,
-                model = vehicle.Model,
-                expirationDate = vehicle.ExpirationDate
-            };
+                policeClient.DefaultRequestHeaders.Remove("Authorization");
+                policeClient.DefaultRequestHeaders.Add("Authorization", reportToken);
+            }
 
-            var response = await policeClient.PostAsJsonAsync(
-                "/api/policevehicle/report-vehicle",
-                reportRequest
-            );
+            var response = await policeClient.GetAsync($"/api/police/status/{vehicle.RegistrationNumber}");
 
             var responseData = await response.Content.ReadAsStringAsync();
 
             return Ok(new
             {
-                message = "Vehicle reported to police",
+                message = "Vehicle police dossier retrieved",
                 statusCode = response.StatusCode,
-                policeResponse = System.Text.Json.JsonDocument.Parse(responseData).RootElement
+                policeReport = System.Text.Json.JsonDocument.Parse(responseData).RootElement
             });
         }
         catch (Exception ex)
@@ -490,6 +512,74 @@ namespace VehicleService.Controllers
                 model = vehicle.Model,
                 changedAt = DateTime.Now
             }
+        });
+    }
+
+    // GET: api/vehicles/{id}/fines — fetch violations from TrafficPoliceService for profile page
+    [HttpGet("{id}/fines")]
+    public async Task<IActionResult> GetVehicleFines(int id)
+    {
+        var vehicle = await _db.Vehicles.FindAsync(id);
+        if (vehicle == null)
+            return NotFound(new { message = "Vehicle not found" });
+
+        try
+        {
+            var policeClient = _httpClientFactory.CreateClient("TrafficPoliceService");
+            var token = Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(token))
+            {
+                policeClient.DefaultRequestHeaders.Remove("Authorization");
+                policeClient.DefaultRequestHeaders.Add("Authorization", token);
+            }
+
+            var response = await policeClient.GetAsync($"/api/police/violations/plate/{vehicle.RegistrationNumber}");
+
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, new { message = "Failed to retrieve fines from traffic police" });
+
+            var data = await response.Content.ReadAsStringAsync();
+            var violations = System.Text.Json.JsonDocument.Parse(data);
+
+            return Ok(new
+            {
+                message = "Fines retrieved successfully",
+                vehicleId = vehicle.Id,
+                registrationNumber = vehicle.RegistrationNumber,
+                fines = violations.RootElement
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching fines for vehicle {VehicleId}", id);
+            return StatusCode(500, new { message = "Error fetching fines", error = ex.Message });
+        }
+    }
+
+    // POST: api/vehicles/update-status — called by TrafficPoliceService (Go) when stolen/accident reported
+    [HttpPost("update-status")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateVehicleStatus([FromBody] VehicleStatusUpdateRequest request)
+    {
+        if (string.IsNullOrEmpty(request.VehiclePlate))
+            return BadRequest(new { message = "Vehicle plate is required" });
+
+        var vehicle = await _db.Vehicles
+            .FirstOrDefaultAsync(v => v.RegistrationNumber == request.VehiclePlate);
+
+        if (vehicle == null)
+        {
+            _logger.LogWarning("TrafficPolice update-status: vehicle {Plate} not found", request.VehiclePlate);
+            return NotFound(new { message = "Vehicle not found" });
+        }
+
+        _logger.LogInformation("TrafficPolice status update received for {Plate}: {Status}", request.VehiclePlate, request.Status);
+
+        return Ok(new
+        {
+            message = "Status update received",
+            vehiclePlate = request.VehiclePlate,
+            status = request.Status
         });
     }
 

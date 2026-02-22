@@ -1,0 +1,116 @@
+<div class="space-y-5">
+  <!-- Search Box -->
+  <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
+      <i class="pi pi-exclamation-circle text-sm"></i>
+      <h2 class="text-base font-semibold">Претрага незгода по регистарској ознаци</h2>
+    </div>
+    <div class="px-5 py-5">
+      <div class="flex gap-2">
+        <input type="text" [(ngModel)]="accidentsPlate" placeholder="нпр. BG-123-AB"
+          (keyup.enter)="searchAccidents()"
+          class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] uppercase" />
+        <p-button label="Претражи" icon="pi pi-search" severity="danger" [loading]="isAccidentsLoading()" (onClick)="searchAccidents()"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  @if (isAccidentsLoading()) {
+    <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+      <i class="pi pi-spin pi-spinner"></i> Учитавање...
+    </div>
+  } @else if (accidentsError()) {
+    <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-4 py-3 rounded-r">
+      <i class="pi pi-exclamation-circle text-[#C6363C] mt-0.5"></i>
+      <span class="text-sm text-red-700">{{ accidentsError() }}</span>
+    </div>
+  } @else if (accidentsSearched()) {
+    @if (accidents().length === 0) {
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+        <i class="pi pi-check-circle text-green-400 text-3xl mb-3 block"></i>
+        <p class="text-sm text-gray-500">Нема евидентираних незгода за ово возило.</p>
+      </div>
+    } @else {
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-[#EEF2F8] border-b border-gray-200 flex items-center justify-between">
+          <span class="text-sm font-semibold text-gray-700">Историја незгода</span>
+          <span class="text-xs text-gray-400">{{ accidents().length }} запис(а)</span>
+        </div>
+        <div class="divide-y divide-gray-100">
+          @for (a of accidents(); track a.ID) {
+            <div class="px-5 py-4 flex flex-col gap-3">
+              <!-- Top Row: Date & Severity -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded border"
+                    [class.bg-yellow-50]="a.severity === 'MINOR'"   [class.text-yellow-700]="a.severity === 'MINOR'"   [class.border-yellow-200]="a.severity === 'MINOR'"
+                    [class.bg-orange-50]="a.severity === 'MAJOR'"   [class.text-orange-700]="a.severity === 'MAJOR'"   [class.border-orange-200]="a.severity === 'MAJOR'"
+                    [class.bg-red-50]="a.severity === 'CRITICAL'"   [class.text-red-700]="a.severity === 'CRITICAL'"   [class.border-red-200]="a.severity === 'CRITICAL'"
+                    [class.bg-gray-900]="a.severity === 'FATAL'"    [class.text-white]="a.severity === 'FATAL'"          [class.border-gray-900]="a.severity === 'FATAL'"
+                  >{{ severityLabel(a.severity) }}</span>
+                  <span class="text-xs text-gray-400">{{ formatDate(a.accidentDate) }}</span>
+                </div>
+                <div>
+                    @if (a.isResolved) {
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">Решено</span>
+                    } @else {
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">Отворено</span>
+                    }
+                </div>
+              </div>
+
+              <!-- Location & Desc -->
+              <div>
+                <p class="text-sm text-gray-800 font-medium"><i class="pi pi-map-marker text-xs mr-1 text-gray-400"></i>{{ a.location }}</p>
+                <p class="text-xs text-gray-500 mt-1 pl-4">{{ a.description }}</p>
+              </div>
+
+              <!-- Involved Vehicles (Fetched from C# Service) -->
+              @if (a.involvedPlates) {
+                <div class="mt-2 bg-gray-50 rounded p-3 border border-gray-100">
+                  <p class="text-xs text-gray-400 mb-2 uppercase tracking-wide font-semibold">Укључена возила:</p>
+                  
+                  <div class="flex flex-wrap gap-2">
+                    @for (plate of getPlatesArray(a.involvedPlates); track plate) {
+                      
+                      @if (vehicleCache().get(plate); as vehicle) {
+                        <!-- 🚗 VEHICLE FOUND -->
+                        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1.5 shadow-sm">
+                          <div class="bg-blue-600 text-white text-[10px] font-mono px-1.5 rounded">{{ plate }}</div>
+                          <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-700 leading-none">{{ vehicle.make }} {{ vehicle.model }}</span>
+                            <span class="text-[10px] text-gray-500 leading-none mt-0.5">{{ vehicle.ownerName }} ({{ vehicle.year }})</span>
+                          </div>
+                        </div>
+
+                      } @else if (loadingVehicles().has(plate)) {
+                        <!-- ⏳ LOADING -->
+                        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1.5 opacity-70">
+                          <span class="text-xs font-mono text-gray-500">{{ plate }}</span>
+                          <i class="pi pi-spin pi-spinner text-xs text-blue-500"></i>
+                        </div>
+
+                      } @else {
+                        <!-- ❓ NOT FOUND / ERROR -->
+                        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded px-2 py-1.5">
+                          <span class="text-xs font-mono text-gray-700">{{ plate }}</span>
+                          <span class="text-[10px] text-gray-400">(Нема података)</span>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+      <i class="pi pi-exclamation-circle text-gray-300 text-4xl mb-3 block"></i>
+      <p class="text-sm text-gray-400">Унесите регистарску ознаку изнад за претрагу незгода.</p>
+    </div>
+  }
+</div>

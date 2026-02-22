@@ -1,54 +1,68 @@
-<nav class="navbar-container">
-  <div class="navbar-content">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-20">
-        <div class="flex items-center gap-3 cursor-pointer z-10" (click)="goToHome()">
-          <img
-            src="/Mali_grb_Srbije.png"
-            alt="Грб Србије"
-            class="h-14 w-auto drop-shadow-md"
-          />
-          <h1 class="text-xl font-bold text-white drop-shadow-md">eУправа - Регистрација возила</h1>
-        </div>
-        <div class="flex items-center gap-3 z-10">
-          @if (!isAuthenticated()) {
-            <p-button
-              label="Пријава"
-              (onClick)="goToLogin()"
-              styleClass="p-button-text text-white hover:bg-white/20"
-            ></p-button>
-            <p-button
-              label="Регистрација"
-              (onClick)="goToRegister()"
-              styleClass="bg-white text-blue-900 hover:bg-gray-100"
-            ></p-button>
-          } @else {
-            @if (isAdmin()) {
-              <p-button
-                label="Захтеви за регистрацију"
-                icon="pi pi-list"
-                (onClick)="goToAdminRequests()"
-                styleClass="bg-white text-blue-900 hover:bg-gray-100"
-              ></p-button>
-            }
-            <p-button
-              label="Преноси возила"
-              icon="pi pi-refresh"
-              (onClick)="goToTransferRequests()"
-              styleClass="bg-white text-blue-900 hover:bg-gray-100"
-            ></p-button>
-            <span class="text-sm text-white mr-2 drop-shadow-md">
-              Добродошли, <span class="font-semibold cursor-pointer hover:underline" (click)="goToProfile()">{{ getUserName() }}</span>
-            </span>
-            <button
-              (click)="logout()"
-              class="px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors shadow-md"
-            >
-              Одјава
-            </button>
-          }
+<header class="bg-white shadow-sm sticky top-0 z-50">
+  <!-- Tricolor top border (Serbia Flag: Red, Blue, White) -->
+  <div class="flex h-1.5 w-full">
+    <div class="flex-1 bg-[#C6363C]"></div>
+    <div class="flex-1 bg-[#0C4076]"></div>
+    <div class="flex-1 bg-gray-200"></div> <!-- Slightly gray to stand out against white bg -->
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-[4.5rem]">
+      
+      <!-- Logo and Title -->
+      <div class="flex items-center gap-3 cursor-pointer group" (click)="goToHome()">
+        <img src="/Mali_grb_Srbije.png" alt="Грб Србије" class="h-11 w-auto transition-transform duration-300 group-hover:scale-105" />
+        <div class="flex flex-col justify-center">
+          <span class="text-[9px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-0.5 leading-none">Република Србија</span>
+          <h1 class="text-lg font-extrabold text-[#0C4076] tracking-tight leading-none">
+            еУправа <span class="text-gray-300 font-normal mx-1">|</span> <span class="text-gray-700 font-semibold">Министарство унутрашњих послова</span>
+          </h1>
         </div>
       </div>
+
+      <!-- Navigation & Actions -->
+      <div class="flex items-center gap-3">
+        @if (!isAuthenticated()) {
+          <button (click)="goToLogin()" class="text-sm font-semibold text-gray-600 hover:text-[#0C4076] hover:bg-gray-50 transition-colors px-4 py-2 rounded-md">
+            Пријава
+          </button>
+          <button (click)="goToRegister()" class="text-sm font-semibold bg-[#0C4076] text-white px-5 py-2.5 rounded-md hover:bg-blue-900 transition-colors shadow-sm hover:shadow-md">
+            Регистрација
+          </button>
+        } @else {
+          <!-- Authenticated Links -->
+          @if (isMupVozilaRoute()) {
+          <div class="hidden lg:flex items-center gap-1 mr-2 border-r border-gray-200 pr-5">
+            @if (isAdmin()) {
+              <button (click)="goToAdminRequests()" class="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0C4076] px-3 py-2 rounded-md hover:bg-blue-50 transition-colors">
+                <i class="pi pi-list text-xs"></i> Захтеви
+              </button>
+            }
+            <button (click)="goToTransferRequests()" class="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#0C4076] px-3 py-2 rounded-md hover:bg-blue-50 transition-colors">
+              <i class="pi pi-sync text-xs"></i> Преноси возила
+            </button>
+          </div>
+          }
+
+          <!-- User Profile & Logout -->
+          <div class="flex items-center gap-2 pl-2">
+            <div class="flex items-center gap-3 cursor-pointer group px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors" (click)="goToProfile()">
+              <div class="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0C4076] font-bold group-hover:bg-[#0C4076] group-hover:text-white transition-colors shadow-sm">
+                {{ getUserInitial() }}
+              </div>
+              <div class="flex-col hidden sm:flex justify-center">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-none mb-1">Добродошли</span>
+                <span class="text-sm font-bold text-gray-800 leading-none group-hover:text-[#0C4076] transition-colors">{{ getUserName() }}</span>
+              </div>
+            </div>
+            
+            <button (click)="logout()" class="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors ml-1" title="Одјава">
+              <i class="pi pi-sign-out text-lg"></i>
+            </button>
+          </div>
+        }
+      </div>
+
     </div>
   </div>
-</nav>
+</header>

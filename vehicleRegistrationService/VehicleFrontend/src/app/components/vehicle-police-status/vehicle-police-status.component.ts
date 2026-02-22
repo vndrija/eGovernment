@@ -26,7 +26,7 @@ import { PoliceService } from '../../services/police.service';
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" [ngClass]="getStatusDotClass()"></span>
-            <span class="font-medium text-gray-700">{{ getStatusInSerbian(policeReport()!.status) }}</span>
+            <span class="font-medium text-gray-700">{{ getStatusInSerbian(computeStatus()) }}</span>
           </div>
           <div class="flex items-center gap-2">
             <button
@@ -42,29 +42,36 @@ import { PoliceService } from '../../services/police.service';
           </div>
         </div>
 
-        <!-- Wanted -->
-        @if (policeReport()!.isWanted) {
+        <!-- Stolen -->
+        @if (policeReport()!.isStolen) {
           <p class="text-[#C6363C] font-semibold">
-            ⚠ {{ policeReport()!.wantedReason || 'Непознат разлог' }}
+            ⚠ Возило пријављено као украдено
           </p>
+        }
+
+        <!-- Active warrants -->
+        @if (policeReport()!.activeWarrants?.length > 0) {
+          @for (w of policeReport()!.activeWarrants; track $index) {
+            <p class="text-[#C6363C]">⚠ {{ w.flagType }}: {{ w.description }}</p>
+          }
         }
 
         <!-- Outstanding fines -->
-        @if (policeReport()!.outstandingFines > 0) {
+        @if (policeReport()!.totalFinesDue > 0) {
           <p class="text-amber-700">
-            Неплаћено: <span class="font-semibold">{{ policeReport()!.outstandingFines | number }} RSD</span>
+            Неплаћено: <span class="font-semibold">{{ policeReport()!.totalFinesDue | number }} RSD</span>
           </p>
         }
 
-        <!-- Violations -->
-        @if (policeReport()!.violationCount > 0) {
+        <!-- Unpaid violations -->
+        @if (policeReport()!.unpaidViolations?.length > 0) {
           <div class="space-y-2 pt-0.5">
-            @for (v of policeReport()!.activeViolations; track $index) {
+            @for (v of policeReport()!.unpaidViolations; track $index) {
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-gray-700 font-medium truncate">{{ v.violationType }}</p>
+                  <p class="text-gray-700 font-medium truncate">{{ v.type }}</p>
                   <p class="text-gray-400 truncate" style="font-size: 0.65rem">
-                    {{ v.location }} · {{ formatDate(v.dateOfViolation) }}
+                    {{ v.location }} · {{ formatDate(v.violationDate) }}
                   </p>
                 </div>
                 <div class="flex-shrink-0 text-right">
@@ -76,14 +83,9 @@ import { PoliceService } from '../../services/police.service';
               </div>
             }
           </div>
-        } @else if (!policeReport()!.isWanted) {
+        } @else if (!policeReport()!.isStolen && policeReport()!.activeWarrants?.length === 0) {
           <p class="text-green-600">Без налаза у евиденцији</p>
         }
-
-        <!-- Last checked -->
-        <p class="text-gray-300 pt-0.5" style="font-size: 0.62rem">
-          Проверено {{ formatDate(policeReport()!.checkedAt) }}
-        </p>
 
       </div>
 
@@ -155,8 +157,17 @@ export class VehiclePoliceStatusComponent implements OnInit {
     });
   }
 
+  // Compute status from new Go service response fields
+  computeStatus(): string {
+    const r = this.policeReport();
+    if (!r) return 'Clear';
+    if (r.isStolen || r.activeWarrants?.length > 0) return 'Wanted';
+    if (r.totalFinesDue > 0) return 'Alert';
+    return 'Clear';
+  }
+
   getStatusDotClass(): string {
-    switch (this.policeReport()?.status) {
+    switch (this.computeStatus()) {
       case 'Wanted': return 'bg-[#C6363C]';
       case 'Alert':  return 'bg-amber-500';
       case 'Clear':  return 'bg-green-500';

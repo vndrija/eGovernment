@@ -1,6 +1,0 @@
-@TrafficPoliceService_HostAddress = http://localhost:5001
-
-GET {{TrafficPoliceService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

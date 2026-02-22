@@ -1,0 +1,148 @@
+<div class="space-y-5">
+  <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div class="px-5 py-3 bg-[#C6363C] flex items-center gap-2 text-white">
+      <i class="pi pi-search text-sm"></i>
+      <h2 class="text-base font-semibold">Провера возила по регистарској ознаци</h2>
+    </div>
+    <div class="px-5 py-5">
+      <p class="text-sm text-gray-500 mb-4">
+        Унесите регистарску ознаку да бисте добили потпун полицијски досије: статус крађе, активне налоге, неплаћене казне и историју незгода.
+      </p>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          [(ngModel)]="checkPlate"
+          placeholder="нпр. BG-123-AB"
+          (keyup.enter)="checkVehicleStatus()"
+          class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#C6363C] focus:border-[#C6363C] uppercase"
+        />
+        <p-button
+          label="Провери"
+          icon="pi pi-search"
+          severity="danger"
+          [loading]="isDossierLoading()"
+          (onClick)="checkVehicleStatus()"
+        ></p-button>
+      </div>
+    </div>
+  </div>
+
+  @if (isDossierLoading()) {
+    <div class="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
+      <i class="pi pi-spin pi-spinner"></i> Провера у току...
+    </div>
+  }
+
+  @if (dossierError()) {
+    <div class="flex items-start gap-2 bg-red-50 border-l-4 border-[#C6363C] px-4 py-3 rounded-r">
+      <i class="pi pi-exclamation-circle text-[#C6363C] mt-0.5 flex-shrink-0"></i>
+      <span class="text-sm text-red-700">{{ dossierError() }}</span>
+    </div>
+  }
+
+  @if (dossier(); as d) {
+    @if (d.isStolen) {
+      <div class="flex items-center gap-4 bg-red-600 text-white rounded-lg px-5 py-4 shadow-sm">
+        <i class="pi pi-exclamation-triangle text-2xl flex-shrink-0"></i>
+        <div>
+          <p class="font-bold text-lg tracking-wide">УКРАДЕНО ВОЗИЛО</p>
+          <p class="text-red-100 text-sm">Возило {{ d.plateNumber }} је пријављено као украдено и активно се тражи.</p>
+        </div>
+      </div>
+    } @else {
+      <div class="flex items-center gap-4 bg-green-600 text-white rounded-lg px-5 py-4 shadow-sm">
+        <i class="pi pi-check-circle text-2xl flex-shrink-0"></i>
+        <div>
+          <p class="font-bold text-lg tracking-wide">ВОЗИЛО НИЈЕ УКРАДЕНО</p>
+          <p class="text-green-100 text-sm">Возило {{ d.plateNumber }} није евидентирано у бази потражних возила.</p>
+        </div>
+      </div>
+    }
+
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 text-center shadow-sm">
+        <p class="text-2xl font-bold" [class.text-red-600]="d.activeWarrants.length > 0" [class.text-gray-800]="d.activeWarrants.length === 0">
+          {{ d.activeWarrants.length }}
+        </p>
+        <p class="text-xs text-gray-500 mt-1 uppercase tracking-wide">Активних налога</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 text-center shadow-sm">
+        <p class="text-2xl font-bold" [class.text-orange-600]="d.totalFinesDue > 0" [class.text-gray-800]="d.totalFinesDue === 0">
+          {{ d.totalFinesDue | number:'1.0-0' }} RSD
+        </p>
+        <p class="text-xs text-gray-500 mt-1 uppercase tracking-wide">Неплаћене казне</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-4 text-center shadow-sm">
+        <p class="text-2xl font-bold" [class.text-yellow-600]="d.accidentCount > 0" [class.text-gray-800]="d.accidentCount === 0">
+          {{ d.accidentCount }}
+        </p>
+        <p class="text-xs text-gray-500 mt-1 uppercase tracking-wide">Незгода у историји</p>
+      </div>
+    </div>
+
+    @if (d.activeWarrants.length > 0) {
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-red-50 border-b border-red-200 flex items-center gap-2">
+          <i class="pi pi-flag text-[#C6363C] text-sm"></i>
+          <h3 class="text-sm font-semibold text-red-700">Активни налози / Маркирања</h3>
+        </div>
+        <div class="divide-y divide-gray-100">
+          @for (flag of d.activeWarrants; track flag.ID) {
+            <div class="px-5 py-3 flex items-start justify-between gap-4">
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ flag.flagType }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ flag.description }}</p>
+              </div>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 flex-shrink-0">Активно</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (d.unpaidViolations.length > 0) {
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-orange-50 border-b border-orange-200 flex items-center gap-2">
+          <i class="pi pi-wallet text-orange-600 text-sm"></i>
+          <h3 class="text-sm font-semibold text-orange-700">Неплаћене казне</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-[#EEF2F8] text-left">
+                <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Тип</th>
+                <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Опис</th>
+                <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Износ</th>
+                <th class="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Датум</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (v of d.unpaidViolations; track v.ID) {
+                <tr>
+                  <td class="px-4 py-3 text-xs font-medium text-gray-700">{{ violationTypeLabel(v.type) }}</td>
+                  <td class="px-4 py-3 text-gray-600 text-xs">{{ v.description }}</td>
+                  <td class="px-4 py-3 font-semibold text-orange-700 whitespace-nowrap">{{ v.fineAmount | number:'1.0-0' }} RSD</td>
+                  <td class="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">{{ formatDate(v.violationDate) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (d.activeWarrants.length === 0 && d.unpaidViolations.length === 0 && !d.isStolen) {
+      <div class="bg-white border border-gray-200 rounded-lg px-5 py-8 text-center shadow-sm">
+        <i class="pi pi-check-circle text-green-500 text-3xl mb-3 block"></i>
+        <p class="text-sm text-gray-600">Нема активних налога нити неплаћених казни за ово возило.</p>
+      </div>
+    }
+  }
+
+  @if (!dossierSearched() && !isDossierLoading()) {
+    <div class="bg-white border border-gray-200 rounded-lg px-5 py-10 text-center shadow-sm">
+      <i class="pi pi-search text-gray-300 text-4xl mb-3 block"></i>
+      <p class="text-sm text-gray-400">Унесите регистарску ознаку изнад да бисте покренули проверу.</p>
+    </div>
+  }
+</div>

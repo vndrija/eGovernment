@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: authservice
     ports:
-      - "5000:8080"
+      - "5005:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
@@ -53,10 +53,21 @@ services:
       dockerfile: Dockerfile
     container_name: trafficpoliceservice
     ports:
-      - "5003:8080"
+      - "5004:8080" # Host 5003 -> Container 8080
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
+      # Database Connection String for GORM (SQL Server)
+      - DB_URL=sqlserver://sa:YourStrong@Passw0rd@sqlserver:1433?database=TrafficPoliceDb
+      # Port the Go app listens on internally
+      - PORT=8080
+      # JWT Configuration (Must match AuthService)
+      - JWT_SECRET=YourSuperSecretKeyForJWT_MustBe32CharactersOrMore!
+      - JWT_ISSUER=eUpravaAuthService
+      # Integration with VehicleService
+      - VEHICLE_SERVICE_URL=http://vehicleservice:8080
+    depends_on:
+      - sqlserver
+      - authservice
+        # condition: service_healthy
     networks:
       - euprava-network
 
@@ -98,12 +109,19 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
+    platform: linux/amd64
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrong@Passw0rd
       - MSSQL_PID=Developer
     ports:
       - "1433:1433"
+    # healthcheck:
+    #   test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourStrong@Passw0rd' || exit 1"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 15
+    #   start_period: 30s
     volumes:
       - sqlserver-data:/var/opt/mssql
     networks:

@@ -1,20 +1,4 @@
+/* We are using Tailwind CSS, so we can keep this empty or just block host */
 :host {
   display: block;
-}
-
-.navbar-container {
-  position: relative;
-  background: linear-gradient(to bottom,
-    #C6363C 0%,
-    #C6363C 33.33%,
-    #0C4076 33.33%,
-    #0C4076 66.66%,
-    #FFFFFF 66.66%,
-    #FFFFFF 100%
-  );
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.navbar-content {
-  position: relative;
 }

@@ -74,6 +74,10 @@ export class ProfileComponent implements OnInit {
   isEditingInDetailsDialog = signal<boolean>(false);
   isLoadingOwnershipHistory = signal<boolean>(false);
   isCreatingTransfer = signal<boolean>(false);
+  isLoadingFines = signal<boolean>(false);
+
+  vehicleFines = signal<any[]>([]);
+  totalFinesDue = signal<number>(0);
 
   userVehicles = signal<Vehicle[]>([]);
   selectedVehicle = signal<Vehicle | null>(null);
@@ -192,6 +196,11 @@ export class ProfileComponent implements OnInit {
     this.isEditingProfile.set(true);
     this.profileForm.get('username')?.enable();
     this.profileForm.get('email')?.enable();
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   cancelProfileEdit(): void {
@@ -441,6 +450,7 @@ export class ProfileComponent implements OnInit {
     this.showDetailsDialog.set(true);
     this.isEditingInDetailsDialog.set(false);
     this.loadOwnershipHistory(vehicle.id);
+    this.loadVehicleFines(vehicle.id);
   }
 
   closeDetailsDialog(): void {
@@ -452,6 +462,8 @@ export class ProfileComponent implements OnInit {
     this.transferForm.reset();
     this.transferError.set('');
     this.ownershipHistory.set([]);
+    this.vehicleFines.set([]);
+    this.totalFinesDue.set(0);
   }
 
   enableEditing(): void {
@@ -526,6 +538,24 @@ export class ProfileComponent implements OnInit {
         console.error('Failed to load ownership history', error);
         this.isLoadingOwnershipHistory.set(false);
         this.ownershipHistory.set([]);
+      }
+    });
+  }
+
+  loadVehicleFines(vehicleId: number): void {
+    this.isLoadingFines.set(true);
+    this.vehicleService.getVehicleFines(vehicleId).subscribe({
+      next: (response) => {
+        const fines = response.fines || [];
+        this.vehicleFines.set(fines);
+        const pending = fines.filter((f: any) => f.status === 'PENDING');
+        this.totalFinesDue.set(pending.reduce((sum: number, f: any) => sum + f.fineAmount, 0));
+        this.isLoadingFines.set(false);
+      },
+      error: () => {
+        this.vehicleFines.set([]);
+        this.totalFinesDue.set(0);
+        this.isLoadingFines.set(false);
       }
     });
   }
