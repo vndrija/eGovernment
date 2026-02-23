@@ -10,7 +10,7 @@
         <button (click)="setSection('violations')" [class.bg-[#0C4076]]="activeSection() === 'violations'" [class.text-white]="activeSection() === 'violations'" [class.bg-white]="activeSection() !== 'violations'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Прекршаји</button>
         <button (click)="setSection('accidents')" [class.bg-[#0C4076]]="activeSection() === 'accidents'" [class.text-white]="activeSection() === 'accidents'" [class.bg-white]="activeSection() !== 'accidents'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Незгоде</button>
         <button (click)="setSection('officers')" [class.bg-[#0C4076]]="activeSection() === 'officers'" [class.text-white]="activeSection() === 'officers'" [class.bg-white]="activeSection() !== 'officers'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Службеници</button>
-        <button (click)="setSection('flags')" [class.bg-[#0C4076]]="activeSection() === 'flags'" [class.text-white]="activeSection() === 'flags'" [class.bg-white]="activeSection() !== 'flags'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Маркирања</button>
+        <button (click)="setSection('flags')" [class.bg-[#0C4076]]="activeSection() === 'flags'" [class.text-white]="activeSection() === 'flags'" [class.bg-white]="activeSection() !== 'flags'" class="px-4 py-2 text-sm font-medium rounded border border-gray-300 transition-colors hover:bg-gray-100">Означена</button>
       </div>
     </div>
 
@@ -137,7 +137,7 @@
       }
 
       @if (activeSection() === 'flags') {
-        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Додај ново маркирање</h3>
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Додај нову ознаку</h3>
         <form [formGroup]="addFlagForm" (ngSubmit)="addFlag()" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -145,7 +145,7 @@
               <input type="text" formControlName="vehiclePlate" placeholder="нпр. BG-123-AB" class="w-full border rounded px-3 py-2 text-sm font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addFlagForm.get('vehiclePlate')?.invalid && addFlagForm.get('vehiclePlate')?.touched" />
             </div>
             <div>
-              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тип маркирања <span class="text-[#C6363C]">*</span></label>
+              <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Тип Ознаке <span class="text-[#C6363C]">*</span></label>
               <input type="text" formControlName="flagType" placeholder="нпр. Интерполова потерница" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#0C4076] focus:border-[#0C4076]" [class.border-red-400]="addFlagForm.get('flagType')?.invalid && addFlagForm.get('flagType')?.touched" />
             </div>
           </div>
@@ -155,7 +155,7 @@
           </div>
           @if (addFlagError()) { <p class="text-sm text-red-600">{{ addFlagError() }}</p> }
           @if (addFlagSuccess()) { <p class="text-sm text-green-600">{{ addFlagSuccess() }}</p> }
-          <div class="pt-2"><p-button type="submit" label="Додај маркирање" icon="pi pi-check" severity="info" [loading]="isAddingFlag()"></p-button></div>
+          <div class="pt-2"><p-button type="submit" label="Додај ознаку" icon="pi pi-check" severity="info" [loading]="isAddingFlag()"></p-button></div>
         </form>
       }
     </div>
