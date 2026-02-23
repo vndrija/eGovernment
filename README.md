@@ -82,6 +82,28 @@ Vehicle details:
 Vehicle transfer: 
 <img width="1901" height="942" alt="prenosVozila" src="https://github.com/user-attachments/assets/1d74f0b2-3316-4e7e-9d75-5be248a8689d" />
 
+Vehicle check:
+<img width="1889" height="939" alt="Screenshot 2026-02-23 at 02 46 21" src="https://github.com/user-attachments/assets/f295a0d6-832d-4282-918f-52dc07279886" />
+
+Stolen vehicles:
+<img width="1904" height="942" alt="Screenshot 2026-02-23 at 02 46 37" src="https://github.com/user-attachments/assets/d53e32f7-fa5b-44cf-bea4-2653406ab24c" />
+
+Violations:
+<img width="1892" height="943" alt="Screenshot 2026-02-23 at 02 46 49" src="https://github.com/user-attachments/assets/a119d472-ad29-4b2a-93a8-3f00d6fb06a3" />
+<img width="573" height="666" alt="Screenshot 2026-02-23 at 02 47 11" src="https://github.com/user-attachments/assets/7f10d704-4bb8-4935-a144-51146d127b75" />
+
+Traffic accidents:
+<img width="1884" height="955" alt="Screenshot 2026-02-23 at 02 47 25" src="https://github.com/user-attachments/assets/0cc119cd-8bfc-44d8-9504-2c40ffb2ea1c" />
+
+Policemen:
+<img width="1886" height="946" alt="Screenshot 2026-02-23 at 02 47 35" src="https://github.com/user-attachments/assets/c0a623bf-e867-44ac-aeb4-8706925232ad" />
+
+Marked Vehicles:
+<img width="1883" height="954" alt="Screenshot 2026-02-23 at 02 47 47" src="https://github.com/user-attachments/assets/3cb37858-46f9-4194-8cdf-3a2b88f4807f" />
+
+Admin page:
+<img width="1893" height="957" alt="Screenshot 2026-02-23 at 02 47 56" src="https://github.com/user-attachments/assets/068a2b75-b0eb-49d1-833c-592b6d6a7daf" />
+
 Mail notification:
 <img width="1898" height="905" alt="Notifikacije" src="https://github.com/user-attachments/assets/cb7a0d5b-a2ff-42f1-b60e-577319b38746" />
 
