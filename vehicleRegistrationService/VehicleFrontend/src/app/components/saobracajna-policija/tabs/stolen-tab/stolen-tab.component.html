@@ -27,6 +27,7 @@
             <thead>
               <tr class="bg-[#EEF2F8] text-left">
                 <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Регистрација</th>
+                <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Инфо Возила</th>
                 <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Опис</th>
                 <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Контакт</th>
                 <th class="px-3 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Датум</th>
@@ -37,6 +38,14 @@
               @for (v of stolenVehicles(); track v.ID) {
                 <tr class="hover:bg-gray-50 transition-colors">
                   <td class="px-3 py-3 font-mono font-semibold text-gray-900 tracking-wider">{{ v.vehiclePlate }}</td>
+                  <td class="px-3 py-3 text-gray-600 text-xs">
+                    @if (v.vehicleDetails) {
+                      <div class="font-semibold">{{ v.vehicleDetails.make }} {{ v.vehicleDetails.model }}</div>
+                      <div class="text-gray-400">{{ v.vehicleDetails.year }} | {{ v.vehicleDetails.color }}</div>
+                    } @else {
+                      <span class="text-gray-400 italic">Нема података</span>
+                    }
+                  </td>
                   <td class="px-3 py-3 text-gray-600 text-xs max-w-xs">{{ v.description }}</td>
                   <td class="px-3 py-3 text-gray-600 text-xs">{{ v.contactInfo }}</td>
                   <td class="px-3 py-3 text-gray-400 text-xs whitespace-nowrap">{{ formatDate(v.reportedDate) }}</td>

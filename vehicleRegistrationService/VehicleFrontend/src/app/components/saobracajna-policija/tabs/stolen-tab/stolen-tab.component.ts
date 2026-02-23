@@ -2,7 +2,12 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { TrafficPoliceService, StolenVehicle } from '../../../../services/traffic-police.service';
+import { TrafficPoliceService, StolenVehicle, VehicleDetails } from '../../../../services/traffic-police.service';
+import { forkJoin, of, catchError } from 'rxjs';
+
+interface StolenVehicleWithDetails extends StolenVehicle {
+  vehicleDetails?: VehicleDetails;
+}
 
 @Component({
   selector: 'app-stolen-tab',
@@ -14,7 +19,7 @@ export class StolenTabComponent implements OnInit {
   private policeService = inject(TrafficPoliceService);
   private fb = inject(FormBuilder);
 
-  stolenVehicles = signal<StolenVehicle[]>([]);
+  stolenVehicles = signal<StolenVehicleWithDetails[]>([]);
   isStolenLoading = signal(false);
   showReportStolenForm = signal(false);
   isReportingStolenLoading = signal(false);
@@ -34,7 +39,28 @@ export class StolenTabComponent implements OnInit {
   loadStolenVehicles() {
     this.isStolenLoading.set(true);
     this.policeService.getStolenVehicles().subscribe({
-      next: (data) => { this.stolenVehicles.set(data); this.isStolenLoading.set(false); },
+      next: (data) => {
+        if (data.length === 0) {
+          this.stolenVehicles.set([]);
+          this.isStolenLoading.set(false);
+          return;
+        }
+
+        const observables = data.map(vehicle => 
+          this.policeService.getVehicleDetails(vehicle.vehiclePlate).pipe(
+            catchError(() => of(null)) // Handle case where details aren't found
+          )
+        );
+
+        forkJoin(observables).subscribe(detailsArray => {
+          const vehiclesWithDetails = data.map((vehicle, index) => ({
+            ...vehicle,
+            vehicleDetails: detailsArray[index] ? detailsArray[index] as VehicleDetails : undefined
+          }));
+          this.stolenVehicles.set(vehiclesWithDetails);
+          this.isStolenLoading.set(false);
+        });
+      },
       error: () => { this.isStolenLoading.set(false); }
     });
   }

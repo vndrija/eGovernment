@@ -77,10 +77,9 @@
                       @if (v.status === 'PENDING') {
                         <button type="button"
                           class="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
-                          [disabled]="payingId() === v.ID"
-                          (click)="payViolation(v.ID)"
+                          (click)="openPayDialog(v.ID)"
                         >
-                          @if (payingId() === v.ID) { <i class="pi pi-spin pi-spinner"></i> } @else { Плати }
+                          Плати
                         </button>
                       }
                       <button type="button"
@@ -106,3 +105,36 @@
     </div>
   }
 </div>
+
+<p-dialog header="Плаћање казне" [visible]="isPayDialogVisible()" (visibleChange)="isPayDialogVisible.set($event)" [modal]="true" [style]="{ width: '35rem' }">
+  <div class="space-y-4 pt-2">
+    <!-- File Upload -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Доказ о уплати (PDF)</label>
+      <p-fileUpload mode="basic" chooseLabel="Изабери PDF" accept=".pdf" maxFileSize="5000000" (onSelect)="onFileUpload($event)" [auto]="false"></p-fileUpload>
+      @if (invoiceFile()) {
+        <div class="mt-2 text-sm text-green-600 font-medium">
+          Изабран фајл: {{ invoiceFile()?.name }}
+        </div>
+      }
+    </div>
+
+    <!-- Signature Pad -->
+    <div class="border-t pt-4">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Дигитални потпис</label>
+      <app-signature-pad (signatureCaptured)="onSignatureCaptured($event)"></app-signature-pad>
+    </div>
+
+    <!-- Error Messages -->
+    @if (paymentError()) {
+      <div class="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-200">{{ paymentError() }}</div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end mt-4">
+      <p-button label="Одустани" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="isPayDialogVisible.set(false)"></p-button>
+      <p-button label="Потврди и плати" icon="pi pi-check" severity="success" [loading]="isSubmittingPayment()" (onClick)="submitPayment()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

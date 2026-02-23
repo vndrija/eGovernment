@@ -77,7 +77,7 @@ export class FlagsTabComponent {
     this.policeService.resolveFlag(id).subscribe({
       next: () => {
         this.resolvingFlagId.set(null);
-        this.messageService.add({ severity: 'success', summary: 'Успешно', detail: 'Маркирање је уклоњено.', life: 3000 });
+        this.messageService.add({ severity: 'success', summary: 'Успешно', detail: 'Ознака је уклоњено.', life: 3000 });
         this.searchFlags();
       },
       error: () => {

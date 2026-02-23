@@ -120,11 +120,11 @@ export class AdminTabComponent {
     this.policeService.addFlag(this.addFlagForm.value as any).subscribe({
       next: () => {
         this.isAddingFlag.set(false);
-        this.addFlagSuccess.set('Маркирање је успешно додато.');
+        this.addFlagSuccess.set('Означкивање је успешно додато.');
         this.addFlagForm.reset();
         setTimeout(() => { this.addFlagSuccess.set(''); }, 3000);
       },
-      error: () => { this.addFlagError.set('Грешка при додавању маркирања.'); this.isAddingFlag.set(false); }
+      error: () => { this.addFlagError.set('Грешка при додавању ознаке.'); this.isAddingFlag.set(false); }
     });
   }
 }
