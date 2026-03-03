@@ -1,5 +1,7 @@
 # eGovernment
-This is a project with 2 developed systems for eGovernment: MUP Vehicles (Andrija) and Traffic Police (Vukasin).
+This is a project with 2 developed systems for eGovernment: MUP Vehicles (Andrija) and Traffic Police (Vukasin). 
+
+Rated best project in the class by professor for trying using new tools like Claude Code for eUprava chatbot, good UI and good research work about eUprava.
 
 MUP Vehicles is developed using C#/.NET for backend.
 
